@@ -36,7 +36,7 @@ assert_tree_same() {
 mkdir -p "${STALE_STAGING_DIR}/codex-skill"
 echo "left over from an interrupted install" > "${STALE_STAGING_DIR}/codex-skill/stale.txt"
 
-CODEX_HOME="${CODEX_HOME}" bash "${SKILL_DIR}/scripts/install.sh"
+env -u CODEX_USER_SKILLS_DIR CODEX_HOME="${CODEX_HOME}" bash "${SKILL_DIR}/scripts/install.sh"
 
 assert_file "${INSTALLED_DIR}/SKILL.md"
 [[ -d "${STALE_STAGING_DIR}" ]] ||
@@ -72,18 +72,43 @@ python3 -m py_compile \
   "${INSTALLED_DIR}/scripts/preview_bundle.py" \
   "${INSTALLED_DIR}/scripts/skill_generator.py"
 
-if CODEX_HOME="${CODEX_HOME}" bash "${SKILL_DIR}/scripts/install.sh" >/dev/null 2>&1; then
+if env -u CODEX_USER_SKILLS_DIR CODEX_HOME="${CODEX_HOME}" bash "${SKILL_DIR}/scripts/install.sh" >/dev/null 2>&1; then
   fail "installer overwrote an existing skill"
 fi
 
 grep -q 'references/HARNESS.md' "${INSTALLED_DIR}/SKILL.md" ||
   fail "installed SKILL.md does not point to vendored HARNESS.md"
 
+CUSTOM_SKILLS_DIR="${TMP_DIR}/user skills root"
+CUSTOM_INSTALLED_DIR="${CUSTOM_SKILLS_DIR}/cli-anything"
+CUSTOM_CODEX_HOME="${TMP_DIR}/secondary-codex-home"
+CODEX_USER_SKILLS_DIR="${CUSTOM_SKILLS_DIR}" CODEX_HOME="${CUSTOM_CODEX_HOME}" \
+  bash "${SKILL_DIR}/scripts/install.sh"
+assert_file "${CUSTOM_INSTALLED_DIR}/SKILL.md"
+[[ ! -e "${CUSTOM_CODEX_HOME}/skills/cli-anything" ]] ||
+  fail "explicit CODEX_USER_SKILLS_DIR did not take precedence over CODEX_HOME"
+
+INVALID_SKILLS_ROOT="${TMP_DIR}/not-a-directory"
+INVALID_FALLBACK_HOME="${TMP_DIR}/invalid-fallback-home"
+touch "${INVALID_SKILLS_ROOT}"
+if CODEX_USER_SKILLS_DIR="${INVALID_SKILLS_ROOT}" CODEX_HOME="${INVALID_FALLBACK_HOME}" \
+  bash "${SKILL_DIR}/scripts/install.sh" >/dev/null 2>&1; then
+  fail "installer accepted an invalid explicit CODEX_USER_SKILLS_DIR"
+fi
+[[ ! -e "${INVALID_FALLBACK_HOME}/skills/cli-anything" ]] ||
+  fail "installer fell back to CODEX_HOME after invalid explicit CODEX_USER_SKILLS_DIR"
+
+DEFAULT_HOME="${TMP_DIR}/default home"
+DEFAULT_INSTALLED_DIR="${DEFAULT_HOME}/.codex/skills/cli-anything"
+env -u CODEX_USER_SKILLS_DIR -u CODEX_HOME HOME="${DEFAULT_HOME}" \
+  bash "${SKILL_DIR}/scripts/install.sh"
+assert_file "${DEFAULT_INSTALLED_DIR}/SKILL.md"
+
 DETACHED_ROOT="${TMP_DIR}/detached"
 DETACHED_LOG="${TMP_DIR}/detached-install.log"
 mkdir -p "${DETACHED_ROOT}"
 cp -R "${SKILL_DIR}" "${DETACHED_ROOT}/codex-skill"
-if CODEX_HOME="${TMP_DIR}/detached-home" bash "${DETACHED_ROOT}/codex-skill/scripts/install.sh" >"${DETACHED_LOG}" 2>&1; then
+if env -u CODEX_USER_SKILLS_DIR CODEX_HOME="${TMP_DIR}/detached-home" bash "${DETACHED_ROOT}/codex-skill/scripts/install.sh" >"${DETACHED_LOG}" 2>&1; then
   fail "installer accepted a detached skill without canonical resources"
 fi
 grep -q 'Cannot find canonical CLI-Anything resources' "${DETACHED_LOG}" ||

@@ -6,15 +6,16 @@ $repoRoot = Split-Path -Parent $skillDir
 $pluginDir = Join-Path $repoRoot "cli-anything-plugin"
 $previewProtocol = Join-Path $repoRoot "docs/PREVIEW_PROTOCOL.md"
 
-$codexHome = if ($env:CODEX_HOME) {
-    $env:CODEX_HOME
+$destRoot = if ($env:CODEX_USER_SKILLS_DIR) {
+    $env:CODEX_USER_SKILLS_DIR
+} elseif ($env:CODEX_HOME) {
+    Join-Path $env:CODEX_HOME "skills"
 } elseif ($env:USERPROFILE) {
-    Join-Path $env:USERPROFILE ".codex"
+    Join-Path (Join-Path $env:USERPROFILE ".codex") "skills"
 } else {
-    throw "CODEX_HOME is not set and USERPROFILE is unavailable."
+    throw "CODEX_USER_SKILLS_DIR, CODEX_HOME, and USERPROFILE are unavailable."
 }
 
-$destRoot = Join-Path $codexHome "skills"
 $destDir = Join-Path $destRoot "cli-anything"
 $stagingDir = $null
 

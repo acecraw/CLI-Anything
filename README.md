@@ -610,7 +610,7 @@ On Windows PowerShell, use:
 .\CLI-Anything\codex-skill\scripts\install.ps1
 ```
 
-This installs the skill to `$CODEX_HOME/skills/cli-anything` (or `~/.codex/skills/cli-anything` if `CODEX_HOME` is unset).
+This installs the skill to `$CODEX_USER_SKILLS_DIR/cli-anything` when that variable is set; otherwise it uses `$CODEX_HOME/skills/cli-anything`, or `~/.codex/skills/cli-anything` when `CODEX_HOME` is unset.
 The installer also vendors the canonical `HARNESS.md`, command specifications,
 on-demand guides, reusable helper scripts, skill template, and preview protocol
 into the installed skill's `references/` and `scripts/` directories.

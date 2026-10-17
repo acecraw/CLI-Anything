@@ -256,7 +256,7 @@ Windows PowerShellの場合：
 .\CLI-Anything\codex-skill\scripts\install.ps1
 ```
 
-これにより`$CODEX_HOME/skills/cli-anything`（`CODEX_HOME`が未設定の場合は`~/.codex/skills/cli-anything`）にスキルがインストールされます。
+`CODEX_USER_SKILLS_DIR`が設定されている場合は`$CODEX_USER_SKILLS_DIR/cli-anything`に、そうでない場合は`$CODEX_HOME/skills/cli-anything`にインストールされます。`CODEX_HOME`も未設定の場合は`~/.codex/skills/cli-anything`を使用します。
 
 インストール後、検出されるようにCodexを再起動してください。
 

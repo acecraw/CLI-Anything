@@ -7,7 +7,7 @@ SKILL_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 REPO_ROOT="$(cd "${SKILL_DIR}/.." && pwd)"
 PLUGIN_DIR="${REPO_ROOT}/cli-anything-plugin"
 PREVIEW_PROTOCOL="${REPO_ROOT}/docs/PREVIEW_PROTOCOL.md"
-DEST_ROOT="${CODEX_HOME:-$HOME/.codex}/skills"
+DEST_ROOT="${CODEX_USER_SKILLS_DIR:-${CODEX_HOME:-$HOME/.codex}/skills}"
 DEST_DIR="${DEST_ROOT}/cli-anything"
 STAGING_DIR=""
 
